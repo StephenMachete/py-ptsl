@@ -444,7 +444,7 @@ class Engine:
         """
         op = ops.GetMemoryLocations(
             pagination_request=pt.PaginationRequest(limit=1000, offset=0)
-            )
+        )
         self.client.run(op)
         return op.response.memory_locations
 
@@ -932,18 +932,31 @@ class Engine:
         """
         Selects all tracks matching any of the passed names literally.
         """
-        # TODO: handle pagination request?
-        op = ops.SelectTracksByName(track_names=names, selection_mode=mode)
+        op = ops.SelectTracksByName(
+            track_names=names, selection_mode=mode,
+            pagination_request=pt.PaginationRequest(limit=1000, offset=0))
+
         self.client.run(op)
 
-    def get_timeline_selection(self,
-                               time_scale: Optional['TrackOffsetOptions'] = pt.TimeCode
+    def get_timeline_selection(self, format: TrackOffsetOptions = TimeCode
                                ) -> Tuple[str, str]:
         """
         Returns data about the current timeline selection.
+
         :returns: a Tuple of the In and Out time.
         """
-        op = ops.GetTimelineSelection(time_scale=time_scale)
+        op = ops.GetTimelineSelection(time_scale=format)
         self.client.run(op)
 
         return (op.response.in_time, op.response.out_time)
+
+    def get_system_delay(self) -> int:
+        """
+        Get the current system delay.
+
+        :returns: the delay in samples.
+        """
+        op = ops.GetSessionSystemDelayInfo()
+        self.client.run(op)
+
+        return op.response.samples
